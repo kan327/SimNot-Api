@@ -8,6 +8,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: process.env.DB_HOST, // ganti atau pakai .env di lokal
   user: process.env.DB_USER,
+  port: process.env.DB_PORT,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME
 });
