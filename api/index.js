@@ -54,7 +54,17 @@ app.get('/', (req, res) => {
 
 // User ===========================================================================================
 app.get('/api/users', (req, res) => {
-  db.query('SELECT * FROM user', (err, results) => {
+  const { email } = req.query;
+
+  let sql = 'SELECT * FROM user';
+  const values = [];
+
+  if (email) {
+    sql += ' WHERE email = ?';
+    values.push(email);
+  }
+
+  db.query(sql, values, (err, results) => {
     if (err) return sendResponse(res, {
       status: false,
       message: 'Database error',
@@ -67,6 +77,7 @@ app.get('/api/users', (req, res) => {
     });
   });
 });
+
 
 app.get('/api/users/:id', (req, res) => {
   db.query('SELECT * FROM user WHERE user_id = ?', [req.params.id], (err, results) => {
@@ -88,7 +99,6 @@ app.get('/api/users/:id', (req, res) => {
   });
 });
 
-// Contoh POST
 app.post('/api/users', (req, res) => {
   const { email, password, user_name } = req.body;
   db.query(
@@ -109,7 +119,145 @@ app.post('/api/users', (req, res) => {
   );
 });
 
-// Lanjutkan pola yang sama untuk PUT, DELETE, dan endpoint catatan
+app.put('/api/users/:id', (req, res) => {
+  const { email, password, user_name } = req.body;
+  const { id } = req.params;
 
+  db.query(
+    'UPDATE user SET email = ?, password = ?, user_name = ? WHERE user_id = ?',
+    [email, password, user_name, id],
+    (err, result) => {
+      if (err) return sendResponse(res, {
+        status: false,
+        message: 'Failed to update user',
+        errorData: err
+      }, 500);
+
+      if (result.affectedRows === 0) return sendResponse(res, {
+        status: false,
+        message: 'User not found'
+      }, 404);
+
+      sendResponse(res, {
+        message: 'User updated successfully'
+      });
+    }
+  );
+});
+// ================================================================================================
+
+// Catatan ========================================================================================
+app.get('/api/catatan', (req, res) => {
+  const { user_id, title } = req.query;
+
+  let sql = 'SELECT * FROM catatan';
+  const conditions = [];
+  const values = [];
+
+  if (user_id) {
+    conditions.push('user_id = ?');
+    values.push(user_id);
+  }
+
+  if (title) {
+    conditions.push('title LIKE ?');
+    values.push(`%${title}%`);
+  }
+
+  if (conditions.length > 0) {
+    sql += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  db.query(sql, values, (err, results) => {
+    if (err) return sendResponse(res, {
+      status: false,
+      message: 'Gagal mengambil data catatan',
+      errorData: err
+    }, 500);
+
+    sendResponse(res, {
+      message: 'Berhasil mengambil data catatan',
+      data: results
+    });
+  });
+});
+
+
+app.get('/api/catatan/:id', (req, res) => {
+  db.query('SELECT * FROM catatan WHERE catatan_id = ?', [req.params.id], (err, results) => {
+    if (err) return sendResponse(res, {
+      status: false,
+      message: 'Gagal mengambil catatan',
+      errorData: err
+    }, 500);
+
+    if (results.length === 0) {
+      return sendResponse(res, {
+        status: false,
+        message: 'Catatan tidak ditemukan'
+      }, 404);
+    }
+
+    sendResponse(res, {
+      message: 'Berhasil mengambil catatan',
+      data: results[0]
+    });
+  });
+});
+
+app.post('/api/catatan', (req, res) => {
+  const { isi, judul, user_id } = req.body;
+
+  db.query(
+    'INSERT INTO catatan (isi, judul, user_id) VALUES (?, ?, ?)',
+    [isi, judul, user_id],
+    (err, result) => {
+      if (err) return sendResponse(res, {
+        status: false,
+        message: 'Gagal membuat catatan',
+        errorData: err
+      }, 500);
+
+      sendResponse(res, {
+        message: 'Catatan berhasil dibuat',
+        data: { catatan_id: result.insertId }
+      }, 201);
+    }
+  );
+});
+
+app.put('/api/catatan/:id', (req, res) => {
+  const { isi, judul } = req.body;
+
+  db.query(
+    'UPDATE catatan SET isi = ?, judul = ? WHERE catatan_id = ?',
+    [isi, judul, req.params.id],
+    (err, result) => {
+      if (err) return sendResponse(res, {
+        status: false,
+        message: 'Gagal memperbarui catatan',
+        errorData: err
+      }, 500);
+
+      sendResponse(res, {
+        message: 'Catatan berhasil diperbarui'
+      });
+    }
+  );
+});
+
+app.delete('/api/catatan/:id', (req, res) => {
+  db.query('DELETE FROM catatan WHERE catatan_id = ?', [req.params.id], (err, result) => {
+    if (err) return sendResponse(res, {
+      status: false,
+      message: 'Gagal menghapus catatan',
+      errorData: err
+    }, 500);
+
+    sendResponse(res, {
+      message: 'Catatan berhasil dihapus'
+    });
+  });
+});
 
 module.exports = app;
