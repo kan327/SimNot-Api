@@ -3,11 +3,11 @@ const mysql = require('mysql2');
 const app = express();
 app.use(express.json());
 
-const HOST = process.env.DB_HOST;
-const PORT = process.env.DB_PORT || 3306;
-const USER = process.env.DB_USER;
-const PASS = process.env.DB_PASS;
-const NAME = process.env.DB_NAME;
+const HOST = process.env.DB_HOST || 'tramway.proxy.rlwy.net';
+const PORT = process.env.DB_PORT || 57989;
+const USER = process.env.DB_USER || 'root';
+const PASS = process.env.DB_PASS || 'pkTNePlkjblmgkKsSZVojOxUgulITkuR';
+const NAME = process.env.DB_NAME || 'railway';
 
 // Koneksi database
 const db = mysql.createConnection({
