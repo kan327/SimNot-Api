@@ -438,7 +438,7 @@ app.get('/api/catatan', async (req, res) => {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
 
-    sql += ' ORDER BY tanggal DESC';
+    sql += ' ORDER BY date_time DESC';
     const [results] = await pool.query(sql, values);
     sendResponse(res, { message: 'Berhasil mengambil data catatan', data: results });
   } catch (err) {
