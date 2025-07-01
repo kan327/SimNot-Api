@@ -420,7 +420,7 @@ app.put('/api/users/:id', async (req, res) => {
 app.get('/api/catatan', async (req, res) => {
   try {
     const { user_id, title } = req.query;
-    let sql = 'SELECT * FROM catatan';
+    let sql = 'SELECT * FROM catatan ';
     const conditions = [];
     const values = [];
 
@@ -438,6 +438,7 @@ app.get('/api/catatan', async (req, res) => {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
 
+    sql += ' ORDER BY tanggal DESC';
     const [results] = await pool.query(sql, values);
     sendResponse(res, { message: 'Berhasil mengambil data catatan', data: results });
   } catch (err) {
